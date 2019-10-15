@@ -1,0 +1,30 @@
+{
+  "connection": "default",
+  "collectionName": "stores",
+  "info": {
+    "name": "store",
+    "description": ""
+  },
+  "options": {
+    "increments": true,
+    "timestamps": [
+      "created_at",
+      "updated_at"
+    ],
+    "comment": ""
+  },
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "open": {
+      "type": "date"
+    },
+    "close": {
+      "type": "date"
+    },
+    "location": {
+      "type": "string"
+    }
+  }
+}
