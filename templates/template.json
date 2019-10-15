@@ -1,0 +1,172 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appNamePrefix": {
+      "type": "string",
+      "maxLength": 19,
+      "metadata": {
+        "description": "The name of the web app that you wish to create."
+      }
+    },
+    "sqlAdministratorLogin": {
+      "type": "string",
+      "metadata": {
+        "description": "The administrator username of the SQL Server."
+      }
+    },
+    "sqlAdministratorLoginPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The administrator password of the SQL Server."
+      }
+    }
+  },
+  "variables": {
+    "webAppName": "[concat(parameters('appNamePrefix'), '-', substring(uniquestring(resourceGroup().id, deployment().name), 0, 4))]",
+    "sqlServerName": "[concat('sqlserver', uniqueString(subscription().id, resourceGroup().id))]",
+    "databaseName": "strapi-db",
+    "databaseEdition": "Basic",
+    "databaseCollation": "SQL_Latin1_General_CP1_CI_AS",
+    "databaseServiceObjectiveName": "Basic"
+  },
+  "resources": [
+    {
+      "apiVersion": "2018-02-01",
+      "name": "[variables('webAppName')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[resourceGroup().location]",
+      "tags": null,
+      "dependsOn": [
+        "[concat('Microsoft.Web/serverfarms/', concat(variables('webAppName'), '-', 'plan'))]",
+        "[concat('Microsoft.Sql/servers/', concat(variables('sqlServerName')))]"
+      ],
+      "properties": {
+        "name": "[variables('webAppName')]",
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "WEBSITE_NODE_DEFAULT_VERSION",
+              "value": "10.14.1"
+            },
+            {
+              "name": "WEBSITE_RUN_FROM_PACKAGE",
+              "value": "https://github.com/strangecyan/talksuite-pot-demo/releases/download/1.0.0/Archive.zip"
+            },
+            {
+              "name": "NODE_ENV",
+              "value": "production"
+            },
+            {
+              "name": "DATABASE_NAME",
+              "value": "[variables('sqlserverName')]"
+            },
+            {
+              "name": "DATABASE_HOST",
+              "value": "[reference(concat('Microsoft.Sql/servers/', variables('sqlServerName'))).fullyQualifiedDomainName]"
+            },
+            {
+              "name": "DATABASE_USERNAME",
+              "value": "[parameters('sqlAdministratorLogin')]"
+            },
+            {
+              "name": "DATABASE_PASSWORD",
+              "value": "[parameters('sqlAdministratorLoginPassword')]"
+            },
+            {
+              "name": "DATABASE_PORT",
+              "value": "1433"
+            }
+          ],
+          "linuxFxVersion": "NODE|10.14",
+          "alwaysOn": true
+        },
+        "serverFarmId": "[resourceId(resourceGroup().location, 'Microsoft.Web/serverfarms', concat(variables('webAppName'), '-', 'plan'))]",
+        "hostingEnvironment": "",
+        "clientAffinityEnabled": false
+      }
+    },
+    {
+      "apiVersion": "2018-02-01",
+      "name": "[concat(variables('webAppName'), '-', 'plan')]",
+      "type": "Microsoft.Web/serverfarms",
+      "location": "[resourceGroup().location]",
+      "kind": "linux",
+      "tags": null,
+      "dependsOn": [
+      ],
+      "properties": {
+        "name": "[concat(variables('webAppName'), '-', 'plan')]",
+        "workerSize": "1",
+        "workerSizeId": "1",
+        "numberOfWorkers": "1",
+        "reserved": true,
+        "hostingEnvironment": ""
+      },
+      "sku": {
+        "Tier": "Basic",
+        "Name": "B2"
+      }
+    },
+    {
+      "name": "[variables('sqlServerName')]",
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2014-04-01-preview",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "SqlServer"
+      },
+      "properties": {
+        "administratorLogin": "[parameters('sqlAdministratorLogin')]",
+        "administratorLoginPassword": "[parameters('sqlAdministratorLoginPassword')]",
+        "version": "12.0"
+      },
+      "resources": [
+        {
+          "name": "[variables('databaseName')]",
+          "type": "databases",
+          "apiVersion": "2015-01-01",
+          "location": "[resourceGroup().location]",
+          "tags": {
+            "displayName": "Database"
+          },
+          "properties": {
+            "edition": "[variables('databaseEdition')]",
+            "collation": "[variables('databaseCollation')]",
+            "requestedServiceObjectiveName": "[variables('databaseServiceObjectiveName')]"
+          },
+          "dependsOn": [
+            "[variables('sqlServerName')]"
+          ],
+          "resources": [
+            {
+              "comments": "Transparent Data Encryption",
+              "name": "current",
+              "type": "transparentDataEncryption",
+              "apiVersion": "2014-04-01-preview",
+              "properties": {
+                "status": "Enabled"
+              },
+              "dependsOn": [
+                "[variables('databaseName')]"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "AllowAllMicrosoftAzureIps",
+          "type": "firewallrules",
+          "apiVersion": "2014-04-01",
+          "location": "[resourceGroup().location]",
+          "properties": {
+            "endIpAddress": "0.0.0.0",
+            "startIpAddress": "0.0.0.0"
+          },
+          "dependsOn": [
+            "[variables('sqlServerName')]"
+          ]
+        }
+      ]
+    }
+  ]
+}
