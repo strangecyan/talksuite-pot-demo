@@ -81,7 +81,7 @@
           "linuxFxVersion": "NODE|10.14",
           "alwaysOn": true
         },
-        "serverFarmId": "[resourceId(resourceGroup().location, 'Microsoft.Web/serverfarms', concat(variables('webAppName'), '-', 'plan'))]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', concat(variables('webAppName'), '-', 'plan'))]",
         "hostingEnvironment": "",
         "clientAffinityEnabled": false
       }
