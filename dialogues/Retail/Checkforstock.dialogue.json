@@ -1,0 +1,44 @@
+{
+  "attributes": {
+    "json": {
+      "id": "Check for stock",
+      "trigger": {
+        "type": "intent",
+        "intent": "stockcheck"
+      },
+      "entities": {
+        "product": "product"
+      },
+      "nodes": [
+        {
+          "type": "action",
+          "service": {
+            "url": "{bot/cmsBaseUrl}/products?keywords_contains={product}",
+            "method": "GET",
+            "headers": {
+              "Accept": "application/json"
+            }
+          },
+          "outputs": {
+            "body": {
+              "products": ""
+            }
+          }
+        },
+        {
+          "type": "cardCollection",
+          "listName": "products",
+          "contentItem": "product",
+          "content": {
+            "title": "{product/name}",
+            "image": "{bot/cmsBaseUrl}/{product/thumbnail/url}",
+            "text": "We have {product/stock} of '{product/name}' left in stock."
+          }
+        }
+      ]
+    }
+  },
+  "projectId": "6fb60d6d-457a-4dbb-8dc7-603c4733e72c",
+  "type": "dialogue",
+  "id": "2869abc8-fe54-4427-bf94-0059ba325d1c"
+}

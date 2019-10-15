@@ -1,0 +1,79 @@
+{
+  "attributes": {
+    "json": {
+      "id": "Find opening hours",
+      "trigger": {
+        "type": "intent",
+        "intent": "openinghours"
+      },
+      "entities": {
+        "location": "builtin.geographyV2.city"
+      },
+      "nodes": [
+        {
+          "type": "stringPrompt",
+          "message": "What store do you want to know the opening hours of?",
+          "retryMessage": "Error message",
+          "output": "location"
+        },
+        {
+          "type": "operation",
+          "operation": {
+            "String.toLower": [
+              {
+                "var": "location"
+              }
+            ]
+          },
+          "output": "formattedLocation"
+        },
+        {
+          "type": "action",
+          "service": {
+            "url": "{bot/cmsBaseUrl}/stores?location={formattedLocation}",
+            "method": "GET",
+            "headers": {
+              "Accept": "application/json"
+            }
+          },
+          "outputs": {
+            "body": {
+              "matchingStore": "/0"
+            }
+          }
+        },
+        {
+          "type": "operation",
+          "operation": {
+            "DateTime.format": [
+              {
+                "var": "matchingStore/open"
+              },
+              "HH:mm"
+            ]
+          },
+          "output": "open"
+        },
+        {
+          "type": "operation",
+          "operation": {
+            "DateTime.format": [
+              {
+                "var": "matchingStore/close"
+              },
+              "HH:mm"
+            ]
+          },
+          "output": "close"
+        },
+        {
+          "type": "message",
+          "message": "{matchingStore/name} is open from {open} until {close} today."
+        }
+      ]
+    }
+  },
+  "projectId": "6fb60d6d-457a-4dbb-8dc7-603c4733e72c",
+  "type": "dialogue",
+  "id": "d9070899-21d5-4d84-9736-8d1a0a335f39"
+}

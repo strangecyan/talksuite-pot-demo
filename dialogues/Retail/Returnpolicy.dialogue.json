@@ -1,0 +1,20 @@
+{
+  "attributes": {
+    "json": {
+      "id": "Return policy",
+      "trigger": {
+        "type": "intent",
+        "intent": "returnpolicy"
+      },
+      "nodes": [
+        {
+          "type": "message",
+          "message": "If you are not satisfied with the item(s) you have ordered, we will give you a full refund provided that you notify us within 14 days (starting from the day after the receipt of the order) of receipt of the item(s) via our online returns portal and you then have a further 14 days to return them to us by post."
+        }
+      ]
+    }
+  },
+  "projectId": "6fb60d6d-457a-4dbb-8dc7-603c4733e72c",
+  "type": "dialogue",
+  "id": "eb9615f4-656e-44a1-ab59-8d39a259daf2"
+}
